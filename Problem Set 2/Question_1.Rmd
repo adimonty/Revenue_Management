@@ -1,0 +1,377 @@
+# Question 1
+
+Import packages
+
+```{r}
+library(nloptr)
+library(stargazer)
+library(lattice)
+library(dplyr)
+```
+
+Import data
+
+```{r}
+lonCP <- read.csv('CongestionPricing.csv', header = T)
+```
+
+Count rows
+
+```{r}
+N=nrow(lonCP)
+```
+
+Print top rows to verify
+
+```{r}
+head(lonCP)
+```
+
+Maximum willingness to pay
+
+```{r}
+for (i in 1:N){
+lonCP$maxWTP[i]=max(lonCP[i,2:3])
+}
+```
+
+Display top 10 rows to verify
+
+```{r}
+lonCP[1:10,]
+```
+
+Find maximum price willing to be paid, as the upper bound
+
+```{r}
+maxprice=max(lonCP$maxWTP)
+```
+
+### a)
+
+Defining empty array variables we will be introducing
+
+```{r}
+demand=rep(NA,maxprice)
+revenue=rep(NA,maxprice)
+```
+
+Find how many people buy at each price level
+
+```{r}
+for (p in 1:maxprice){
+demand[p]=sum(lonCP$maxWTP>=p)
+revenue[p]=p*demand[p]
+}
+
+```
+
+Identifying the Best Price and demand at that level
+
+```{r}
+revenueBest=max(revenue)
+priceBest=which(revenue == revenueBest)
+demandBest=demand[priceBest]
+print(paste("If a single price is to be charged across all time slots, the optimal price is:£",priceBest))
+
+
+```
+
+As this is demand in the representative sample of 345 drivers, finding the total number of drivers at that price is:
+
+```{r}
+TotalDrive = (demandBest/345)*192000
+```
+
+Total Revenue is:
+
+```{r}
+TR1 = TotalDrive * 8
+
+print(paste("The Total revenue is:£",TR1))
+```
+
+To calculate average speed, the formula is: Average Speed (in km/h) = 30 -- 0.0625 \* (# of cars in thousands, '000)
+
+```{r}
+carsNo = TotalDrive/1000
+
+AvSpd =  30 - (0.0625 * carsNo)
+
+print(paste("The average speed is: ",AvSpd))
+```
+
+To calculate Emissions per car, and total emissions, and print the emissions per car:
+
+```{r}
+if (AvSpd < 25){
+    EmPC= 617.5 - (16.7 * AvSpd)
+    TotEmPC = EmPC * TotalDrive
+  } else {
+    EmPC = 235.0 - (1.4 * AvSpd)
+    TotEmPC = EmPC * TotalDrive
+  }
+
+print(EmPC)
+```
+
+With the optimal price in effect, the total number of emissions will be:
+
+```{r}
+print(paste("The Total emissions are (in g/km):",TotEmPC))
+```
+
+Total emissions with the optimal price of £8 is 49239404 g/km
+
+### b)
+
+Set base price for non peak timing
+
+```{r}
+basePrice=7
+```
+
+Defining certain empty variables
+
+```{r}
+demandNonPeak<-rep(0,maxprice)
+demandPeak<-rep(0,maxprice)
+revenue<-rep(0,maxprice)
+
+
+maxsurplusNonPeak<-rep(0,N)
+```
+
+For each client we will obtain their maximum WTP and maximum Surplus among the Nonpeak time slots, and also generate a new column and add this information to our data
+
+```{r}
+for (i in 1:N){
+        maxsurplusNonPeak[i]=max(lonCP[i,c(3)]-basePrice)
+    
+    
+
+    lonCP$maxsurplusNonPeak[i]=max(lonCP[i,c(3)]-basePrice)
+}
+
+lonCP[1:10,]
+```
+
+Let's first compute clients' surpluses for Peak across all possible Peak Price choices
+
+```{r}
+surplusPeak<-matrix(0,N,maxprice)
+
+for (p in 1:maxprice){
+    for (i in 1:N){
+        surplusPeak[i,p]=lonCP[i,2]-p
+    }
+}
+
+colnames(surplusPeak)=paste0("p=",1:maxprice)
+```
+
+Find the demand
+
+```{r}
+for (p in 1:maxprice){
+  demandNonPeak[p]=sum((maxsurplusNonPeak>surplusPeak[,p])*(maxsurplusNonPeak>=0))
+  demandPeak[p]=sum((surplusPeak[,p]>=maxsurplusNonPeak)*(surplusPeak[,p]>=0))
+  revenue[p]=basePrice*demandNonPeak[p]+p*demandPeak[p]
+}
+```
+
+Plotting NonPeak Demand vs Peak Period Price
+
+```{r}
+xaxis=1:maxprice
+plot(xaxis,demandNonPeak,pch = 16, type="s",col="blue", las=1, xaxt="n",
+     xlab="Price for Peak Period (Time slot 7am-6pm)",ylab="Non-Peak Period Demand")
+xticks <- seq(0, maxprice, by=1)
+axis(side = 1, at = xticks)
+
+```
+
+Plotting Peak Demand vs Peak Period Price
+
+```{r}
+xaxis=1:maxprice
+plot(xaxis,demandPeak,pch = 16, type="s",col="blue", las=1, xaxt="n",
+     xlab="Price for Peak Period",ylab="Peak Period Demand")
+xticks <- seq(0, maxprice, by=1)
+axis(side = 1, at = xticks)
+```
+
+Plotting Revenue vs Peak Period Price
+
+```{r}
+xaxis=1:maxprice
+plot(xaxis,revenue/1000,pch = 16, type="s",col="blue", las=1, xaxt="n",
+     xlab="Price for Peak Period",ylab="Total Revenue")
+xticks <- seq(0, maxprice, by=1)
+axis(side = 1, at = xticks)
+revenueBest=max(revenue[basePrice:maxprice])
+priceBest=which(revenue == revenueBest)
+axis(side = 1, at = priceBest) 
+lines(c(priceBest,priceBest),c(0, revenueBest/1000),lty=2)
+axis(side = 2, at = round(revenueBest/1000,3),las=1)
+lines(c(0,priceBest),c(revenueBest/1000, revenueBest/1000),lty=2)
+```
+
+```{r}
+print(paste("When other periods have a base price of 7, the optimal price for the peak time slot is:",priceBest))
+
+```
+
+Calculate demand at the Non-peak and peak times
+
+```{r}
+BestDemandNonPeak = demandNonPeak[basePrice]
+BestDemandPeak = demandPeak[priceBest]
+```
+
+Calculate total drivers at peak and non peak times
+
+```{r}
+TotalPeak = (BestDemandPeak/345) * 192000
+TotalNonPeak = (BestDemandNonPeak/345) * 192000
+```
+
+Total Revenue in this scenario is:
+
+```{r}
+TR2 = (TotalPeak * 9) + (TotalNonPeak * 7)
+
+print(paste("The Total revenue is:£",TR2))
+```
+
+Average speed in this scenario:
+
+```{r}
+AvSpd2 = 30 - (0.0625*(TotalPeak + TotalNonPeak)/1000)
+
+print(paste("The Average Speed is:",AvSpd2))
+```
+
+Average emissions per car:
+
+```{r}
+if (AvSpd2 < 25){
+    EmPC2= 617.5 - (16.7 * AvSpd2)
+    TotEm2 = EmPC2 * (TotalPeak + TotalNonPeak)
+  } else {
+    EmPC2 = 235.0 - (1.4 * AvSpd2)
+    TotEm2 = EmPC2 * (TotalPeak + TotalNonPeak)
+  }
+
+print(paste("The emissions per car are (in g/km):",EmPC2))
+```
+
+Total emissions in the scenario:
+
+```{r}
+TotEm2 = EmPC2 * (TotalPeak + TotalNonPeak)
+
+print(paste("The Total emissions are (in g/km):",TotEm2))
+```
+
+### c)
+
+Set baseprice
+
+```{r}
+basePrice=7
+```
+
+Defining certain empty variables
+
+```{r}
+demandNonPeak<-rep(0,maxprice)
+demandPeak<-rep(0,maxprice)
+revenue<-rep(0,maxprice)
+emissions <- rep(0,maxprice)
+maxsurplusNonPeak<-rep(0,N)
+TotalPeak2 <-rep(0, maxprice)
+TotalNonPeak2 <-rep(0, maxprice)
+AvgSpd3 <-rep(0, maxprice)
+EPC <-rep(0, maxprice)
+TotEPC <-rep(0, maxprice)
+TotalCars <-rep(0, maxprice)
+Price <-rep(0, maxprice)
+
+```
+
+Obtain max WTP per client
+
+```{r}
+for (i in 1:N){
+        maxsurplusNonPeak[i]=max(lonCP[i,c(3)]-basePrice)
+    
+
+    lonCP$maxsurplusNonPeak[i]=max(lonCP[i,c(3)]-basePrice)
+}
+
+lonCP[1:10,]
+```
+
+Compute client surplus
+
+```{r}
+surplusPeak<-matrix(0,N,maxprice)
+
+for (p in 1:maxprice){
+    for (i in 1:N){
+        surplusPeak[i,p]=lonCP[i,2]-p
+    }
+}
+
+colnames(surplusPeak)=paste0("p=",1:maxprice)
+```
+
+Compute demand, total number of cars, average speed, emissions per car and total emissions
+
+```{r}
+for (p in 1:maxprice){
+  demandNonPeak[p]=sum((maxsurplusNonPeak>surplusPeak[,p])*(maxsurplusNonPeak>=0))
+  demandPeak[p]=sum((surplusPeak[,p]>=maxsurplusNonPeak)*(surplusPeak[,p]>=0))
+  revenue[p]=basePrice*(192000*demandNonPeak[p]/N)+p*(192000*demandPeak[p]/N)
+  TotalPeak2[p] = (demandPeak[p]/345) * 192000
+  TotalNonPeak2[p] = (demandNonPeak[p]/345) * 192000
+  TotalCars[p] = TotalPeak2[p] + TotalNonPeak2[p]
+  Price[p]=p
+  AvgSpd3[p] = 30 - (0.0625*(TotalPeak2[p]+TotalNonPeak2[p])/1000 )
+  if (AvgSpd3[p] < 25){
+    EPC[p] = 617.5 - (16.7 * AvgSpd3[p])
+    TotEPC[p] = EPC[p] * TotalCars[p]
+  } else {
+    EPC[p] = 235.0 - (1.4 * AvgSpd3[p])
+    TotEPC[p] = EPC[p] * TotalCars[p]
+  }
+  
+}
+```
+
+Place all the values in a dataframe to make the data wrangling simpler
+
+```{r}
+PriceData <- data.frame(Price,revenue, demandPeak, demandNonPeak,TotalPeak2, TotalNonPeak2, AvgSpd3,EPC,TotEPC)
+```
+
+Transfer the values which have acceptable revenue of over £1,100,000 to a new dataframe.
+
+```{r}
+AcceptableRev <- PriceData[(PriceData[,2]>1100000),]
+```
+
+Find the ideal price which leads to the minimum total emissions.
+
+```{r}
+IdealPrice <- AcceptableRev[which.min(AcceptableRev$TotEPC),]
+```
+
+Print the resulting optimal price, revenue and total emissions
+
+```{r}
+print(paste("The optimal price is:£",IdealPrice$Price))
+print(paste("The revenue is:£",IdealPrice$revenue))
+print(paste("The Total emissions are (in g/km):",IdealPrice$TotEPC))
+```

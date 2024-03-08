@@ -1,0 +1,363 @@
+# SMM641 Revenue Management and Pricing
+
+## Problem Set 1
+
+Aditya Mohanty
+
+### Question 1
+
+#### a)
+
+```{r FCFS Revenue}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=50 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:1){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+RevenueFCFS=ExpRevenue[1]
+print(paste("Lower Bound for Expected Revenue (FCFS) is:", round(RevenueFCFS,2)))
+
+```
+
+#### b)
+
+```{r Optimal Protection for Lunch Demand}
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+
+```
+
+#### c)
+
+##### Expected Revenue from Reserve Policy
+
+```{r Expected Revenue from Reserve Policy}
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+##### Percentage Increase from Reserve Policy
+
+```{r Percentage Increase}
+PercentImprovement=(OptimalExpRevenue-RevenueFCFS)/RevenueFCFS*100
+print(paste("The percentage increase daily revenue from the protection (reserve) policy is:",round(PercentImprovement,2),"%"))
+```
+
+#### d)
+
+```{r Expected Revenue vs Protection Plot}
+# Plotting Expected Revenue vs Protection Level
+xaxis=0:capacity
+plot(xaxis,ExpRevenue,pch = 13, cex = 0.5,las=1, xaxt="n",
+xlab="Croissants Reserved",ylab="Expected Revenue",cex.lab=1.5, cex.axis=1.5, cex.main=1.5)
+xticks <- seq(0, capacity, by=2)
+axis(side = 1, at = xticks)
+axis(side = 1, at = ProtectBest)
+lines(c(ProtectBest,ProtectBest),c(0, max(ExpRevenue)),lty=2)
+axis(side = 2, at = round(max(ExpRevenue),2),las=1)
+lines(c(0,ProtectBest),c(max(ExpRevenue), max(ExpRevenue)),lty=2)
+```
+
+##### If Capacity is increased slightly
+
+```{r Capacity 55}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=55 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+```{r Capacity 70}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=70 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+```{r Capacity 80}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=80 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+##### If capacity is significantly increased
+
+```{r Capacity 150}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=150 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:400){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:400){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+```{r Capacity 250}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=250 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:500){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:500){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+##### If Mean Demand For Breakfast is Increased
+
+```{r Breakfast Demand Increased}
+mB=70 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=50 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+##### If Mean Demand For Breakfast is Decreased
+
+```{r Breakfast Demand Decreased}
+mB=30 # Mean Demand for Breakfast, Poisson
+mL=20 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=50 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+##### If Mean Demand For Lunch is Decreased
+
+```{r Lunch Demand Decreased}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=10 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=50 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
+
+##### If Mean Demand for Lunch is Increased
+
+```{r Lunch Demand Increased}
+mB=50 # Mean Demand for Breakfast, Poisson
+mL=30 # Mean Demand for Lunch, Poisson
+pB=1.00 # Price for Breakfast
+pL=1.50 # Price for Lunch
+capacity=50 # Number of Croissants received daily
+ExpRevenue=rep(0,capacity+1)
+for (i in 1:(capacity+1)){
+protect=i-1
+availforBreakfast=capacity-protect;
+ExpRevenue[i]=0;
+for(dB in 0:200){
+soldBreakfast=min(availforBreakfast,dB)
+remainforLunch=capacity-soldBreakfast
+for(dL in 0:200){
+soldLunch=min(remainforLunch,dL)
+RevenueThisIter=pB*soldBreakfast+pL*soldLunch
+ExpRevenue[i]=ExpRevenue[i]+
+RevenueThisIter*dpois(dB,mB)*dpois(dL,mL)
+}
+}
+}
+Protectindexbest = which(ExpRevenue == max(ExpRevenue))
+ProtectBest=Protectindexbest-1
+OptimalExpRevenue=max(ExpRevenue)
+print(paste("The Optimal Protection Level for Lunch Demand is:", ProtectBest))
+print(paste("The expected daily revenue from the protection (reserve) policy is:", round(OptimalExpRevenue,2)))
+```
